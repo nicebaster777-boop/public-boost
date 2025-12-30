@@ -1,0 +1,80 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    environment:
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-trusted_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trusted_password}
+      POSTGRES_DB: ${POSTGRES_DB:-trusted_db}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    env_file:
+      - .env.example
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    depends_on:
+      - db
+      - redis
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    command: npm run dev -- --host 0.0.0.0 --port 5173
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-trusted_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-trusted_password}
+      POSTGRES_DB: ${POSTGRES_DB:-trusted_db}
+    # ВАЖНО: Не открываем порты БД наружу в продакшене!
+    # Порты открыты только для локальной разработки
+    # В продакшене уберите строку ports или используйте внутреннюю сеть Docker
+    ports:
+      - "127.0.0.1:5432:5432"  # Только localhost, не наружу
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # Добавляем healthcheck для проверки готовности БД
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-trusted_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --save 60 1 --loglevel warning --requirepass ${REDIS_PASSWORD:-}
+    # ВАЖНО: Не открываем порты Redis наружу в продакшене!
+    # Порты открыты только для локальной разработки
+    ports:
+      - "127.0.0.1:6379:6379"  # Только localhost, не наружу
+    volumes:
+      - redis_data:/data
+    # Добавляем healthcheck для проверки готовности Redis
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  default:
+    name: trusted-network
