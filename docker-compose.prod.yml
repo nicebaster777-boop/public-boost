@@ -82,46 +82,47 @@ services:
       - trusted-network
     # No ports exposed - internal network only
 
-  celery:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    command: celery -A app.celery_app worker --loglevel=info
-    env_file:
-      - .env
-    volumes:
-      - ./backend/uploads:/app/uploads
-      - celery_logs:/app/logs
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - trusted-network
+  # Celery services disabled - not yet implemented
+  # celery:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   command: celery -A app.celery_app worker --loglevel=info
+  #   env_file:
+  #     - .env
+  #   volumes:
+  #     - ./backend/uploads:/app/uploads
+  #     - celery_logs:/app/logs
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - trusted-network
 
-  celery-beat:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    restart: unless-stopped
-    command: celery -A app.celery_app beat --loglevel=info
-    env_file:
-      - .env
-    depends_on:
-      db:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
-    networks:
-      - trusted-network
+  # celery-beat:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   restart: unless-stopped
+  #   command: celery -A app.celery_app beat --loglevel=info
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   networks:
+  #     - trusted-network
 
 volumes:
   postgres_data:
   redis_data:
   backend_logs:
-  celery_logs:
+  # celery_logs:  # Disabled until Celery is implemented
   nginx_logs:
   frontend_static:
 
