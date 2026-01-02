@@ -1,8 +1,7 @@
 /** Application constants. */
 
-// Use /api for proxy in dev, or full URL in production
-// Proxy will rewrite /api/* to /api/v1/* and forward to backend
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Use /api/v1 for proxy - nginx forwards /api to backend which expects /api/v1
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api/v1';
 
 export const STORAGE_KEYS = {
   TOKEN: 'auth_token',
