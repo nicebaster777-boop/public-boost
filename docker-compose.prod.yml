@@ -25,11 +25,11 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     restart: unless-stopped
-    depends_on:
-      - backend
+    volumes:
+      - frontend_static:/usr/share/nginx/html
     networks:
       - trusted-network
-    # No ports exposed - use nginx reverse proxy
+    # Copies built files to volume for nginx
 
   nginx:
     image: nginx:alpine
@@ -42,6 +42,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
       - nginx_logs:/var/log/nginx
+      - frontend_static:/usr/share/nginx/html:ro
     depends_on:
       - backend
       - frontend
@@ -61,7 +62,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
-      retries:5
+      retries: 5
     networks:
       - trusted-network
     # No ports exposed - internal network only
@@ -122,6 +123,7 @@ volumes:
   backend_logs:
   celery_logs:
   nginx_logs:
+  frontend_static:
 
 networks:
   trusted-network:

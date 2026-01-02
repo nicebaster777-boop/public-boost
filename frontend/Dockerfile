@@ -14,15 +14,20 @@ COPY . .
 # Build application
 RUN npm run build
 
-# Production stage
-FROM nginx:alpine
+# Production stage - just copy files, nginx will be in separate container
+FROM alpine:latest
 
-# Copy built files
-COPY --from=builder /app/dist /usr/share/nginx/html
+RUN apk add --no-cache rsync
 
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy built files to a location we can access
+COPY --from=builder /app/dist /app/dist
 
-EXPOSE 80
+# Entrypoint script to copy files to volume
+RUN echo '#!/bin/sh' > /entrypoint.sh && \
+    echo 'rsync -av /app/dist/ /usr/share/nginx/html/' >> /entrypoint.sh && \
+    echo 'exec sleep infinity' >> /entrypoint.sh && \
+    chmod +x /entrypoint.sh
 
-CMD ["nginx", "-g", "daemon off;"]
+WORKDIR /usr/share/nginx/html
+
+ENTRYPOINT ["/entrypoint.sh"]

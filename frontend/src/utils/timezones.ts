@@ -22,7 +22,7 @@ export function getTimezones(): Array<{ value: string; label: string }> {
   // Get all supported timezones
   let allTimezones: string[] = [];
   try {
-    allTimezones = Intl.supportedValuesOf('timeZone');
+    allTimezones = (Intl as any).supportedValuesOf?.('timeZone') || [];
   } catch {
     // Fallback list if Intl.supportedValuesOf is not available
     allTimezones = [
@@ -60,18 +60,9 @@ export function getTimezones(): Array<{ value: string; label: string }> {
  */
 function formatTimezoneLabel(timezone: string): string {
   try {
-    const now = new Date();
-    const formatter = new Intl.DateTimeFormat('ru-RU', {
-      timeZone: timezone,
-      timeZoneName: 'short',
-    });
-    const parts = formatter.formatToParts(now);
-    const tzName = parts.find((p) => p.type === 'timeZoneName')?.value || '';
-    
     // Get UTC offset
     const offset = getTimezoneOffset(timezone);
     const offsetStr = formatOffset(offset);
-    
     return `${timezone.replace(/_/g, ' ')} (${offsetStr})`;
   } catch {
     return timezone.replace(/_/g, ' ');

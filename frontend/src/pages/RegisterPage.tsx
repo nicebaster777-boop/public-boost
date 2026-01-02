@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register as apiRegister, login as apiLogin } from '../services/auth';
+import { register as apiRegister } from '../services/auth';
 import { useAuth } from '../store/AuthContext';
 import { Button } from '../components/common/Button';
 import { Input } from '../components/common/Input';
