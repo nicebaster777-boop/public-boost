@@ -1,10 +1,13 @@
 """Email sending utilities."""
 
+import logging
 import aiosmtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
 from app.core.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 async def send_email(
@@ -27,12 +30,12 @@ async def send_email(
     """
     if not settings.smtp_enabled:
         # In development, just log instead of sending
-        print(f"[EMAIL] Would send to {to_email}: {subject}")
-        print(f"[EMAIL] Body: {html_body}")
+        logger.info(f"[EMAIL] Would send to {to_email}: {subject}")
+        logger.info(f"[EMAIL] Body: {html_body}")
         return True
 
     if not settings.smtp_user or not settings.smtp_password:
-        print("[EMAIL] SMTP credentials not configured")
+        logger.warning("[EMAIL] SMTP credentials not configured")
         return False
 
     try:
@@ -60,9 +63,10 @@ async def send_email(
             password=settings.smtp_password,
         )
 
+        logger.info(f"[EMAIL] Successfully sent email to {to_email}")
         return True
     except Exception as e:
-        print(f"[EMAIL] Error sending email: {e}")
+        logger.error(f"[EMAIL] Error sending email: {e}")
         return False
 
 
