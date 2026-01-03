@@ -7,16 +7,20 @@ import type { ApiListResponse } from '../types/api';
 /**
  * Get dashboard data.
  */
-export async function getDashboardData(): Promise<DashboardData> {
-  return apiGet<DashboardData>('/analytics/dashboard');
+export async function getDashboardData(dateFrom?: string, dateTo?: string): Promise<DashboardData> {
+  const params = new URLSearchParams();
+  if (dateFrom) params.append('date_from', dateFrom);
+  if (dateTo) params.append('date_to', dateTo);
+  const query = params.toString();
+  return apiGet<DashboardData>(`/analytics/dashboard${query ? `?${query}` : ''}`);
 }
 
 /**
  * Get recommendations.
  */
 export async function getRecommendations(): Promise<Recommendation[]> {
-  const response = await apiGet<{ data: Recommendation[] }>('/analytics/recommendations');
-  return response.data || [];
+  const response = await apiGet<{ recommendations: Recommendation[] }>('/analytics/recommendations');
+  return response.recommendations || [];
 }
 
 /**

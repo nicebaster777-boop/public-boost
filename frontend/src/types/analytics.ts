@@ -10,17 +10,50 @@ export interface AnalyticsSnapshot {
   created_at: string;
 }
 
+export interface AccountHealth {
+  score: number;
+  max_score: number;
+  metrics: {
+    total_reach?: number;
+    new_subscribers?: number;
+    engagement_rate?: number;
+  };
+}
+
+export interface CommunityMetrics {
+  id: string;
+  name: string;
+  platform: 'vk' | 'telegram';
+  current_followers: number;
+  follower_growth: number;
+  engagement_rate: number;
+  last_sync_at: string | null;
+}
+
+export interface SubscriberDynamics {
+  period: string;
+  data: Array<{
+    date: string;
+    vk: number;
+    telegram: number;
+  }>;
+}
+
 export interface DashboardData {
-  total_communities: number;
-  total_followers: number;
-  average_engagement_rate: number;
-  account_health_score: number;
+  account_health: AccountHealth;
+  communities: CommunityMetrics[];
+  subscriber_dynamics: SubscriberDynamics;
 }
 
 export interface Recommendation {
   id: string;
   type: string;
+  priority: 'high' | 'medium' | 'low';
   title: string;
   description: string;
-  priority: 'high' | 'medium' | 'low';
+  action: {
+    type: string;
+    suggested_time?: string;
+    platform?: 'vk' | 'telegram';
+  };
 }

@@ -2,26 +2,40 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '../store/AuthContext';
-import { getCommunities } from '../services/communities';
-import type { Community } from '../types/community';
+import { getDashboardData, getRecommendations } from '../services/analytics';
+import type { DashboardData } from '../types/analytics';
+import type { Recommendation } from '../types/analytics';
+import { AccountHealthWidget } from '../components/analytics/AccountHealthWidget';
+import { SubscriberDynamicsChart } from '../components/analytics/SubscriberDynamicsChart';
+import { RecommendationsList } from '../components/analytics/RecommendationsList';
+import { CommunitiesOverview } from '../components/analytics/CommunitiesOverview';
+import { Button } from '../components/common/Button';
 
 export function DashboardPage() {
   const { user } = useAuth();
-  const [communities, setCommunities] = useState<Community[]>([]);
+  const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
+  const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null);
 
   useEffect(() => {
-    loadCommunities();
+    loadDashboard();
   }, []);
 
-  const loadCommunities = async () => {
+  const loadDashboard = async () => {
     try {
       setLoading(true);
-      const response = await getCommunities({ is_active: true });
-      setCommunities(response.data || []);
+      setError(null);
+      const [dashboard, recs] = await Promise.all([
+        getDashboardData(),
+        getRecommendations(),
+      ]);
+      setDashboardData(dashboard);
+      setRecommendations(recs);
+      setLastRefresh(new Date());
     } catch (err) {
-      setError('Не удалось загрузить сообщества');
+      setError('Не удалось загрузить данные дашборда');
       console.error(err);
     } finally {
       setLoading(false);
@@ -38,78 +52,48 @@ export function DashboardPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Дашборд</h1>
-      
+      <div className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">Дашборд</h1>
+        <Button onClick={loadDashboard} variant="outline" size="small">
+          Обновить
+        </Button>
+      </div>
+
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Подписка
-          </h3>
-          <p className="text-2xl font-bold text-blue-600">
-            {user?.subscription_tier === 'extended' ? 'Расширенная' : 'Базовая'}
-          </p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Сообщества
-          </h3>
-          <p className="text-2xl font-bold text-gray-900">
-            {communities.length}
-          </p>
-        </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            Часовой пояс
-          </h3>
-          <p className="text-sm text-gray-600">{user?.timezone}</p>
-        </div>
-      </div>
+      {lastRefresh && (
+        <p className="text-sm text-gray-600 mb-6">
+          Последнее обновление: {lastRefresh.toLocaleTimeString('ru-RU')}
+        </p>
+      )}
 
-      <div className="bg-white p-6 rounded-lg shadow">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">
-          Подключенные сообщества
-        </h2>
-        {communities.length === 0 ? (
-          <p className="text-gray-600">Нет подключенных сообществ</p>
-        ) : (
-          <div className="space-y-4">
-            {communities.map((community) => (
-              <div
-                key={community.id}
-                className="border border-gray-200 rounded-lg p-4"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h3 className="font-semibold text-gray-900">
-                      {community.name}
-                    </h3>
-                    <p className="text-sm text-gray-600">
-                      {community.platform === 'vk' ? 'VK' : 'Telegram'}
-                    </p>
-                  </div>
-                  <span
-                    className={`px-2 py-1 text-xs rounded ${
-                      community.is_active
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}
-                  >
-                    {community.is_active ? 'Активно' : 'Неактивно'}
-                  </span>
-                </div>
-              </div>
-            ))}
+      {dashboardData && (
+        <>
+          {/* Top row: Account Health and Subscriber Dynamics */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <AccountHealthWidget
+              score={dashboardData.account_health.score}
+              maxScore={dashboardData.account_health.max_score}
+              metrics={dashboardData.account_health.metrics}
+            />
+            <SubscriberDynamicsChart data={dashboardData.subscriber_dynamics} />
           </div>
-        )}
-      </div>
+
+          {/* Recommendations */}
+          <div className="mb-6">
+            <RecommendationsList recommendations={recommendations} />
+          </div>
+
+          {/* Communities Overview */}
+          <div className="mb-6">
+            <CommunitiesOverview communities={dashboardData.communities} />
+          </div>
+        </>
+      )}
     </div>
   );
 }
