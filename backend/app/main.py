@@ -39,10 +39,13 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth.router, prefix="/api/v1")
-from app.api import users, communities, posts
+from app.api import users, communities, posts, analytics, calendar, upload
 app.include_router(users.router, prefix="/api/v1")
 app.include_router(communities.router, prefix="/api/v1")
 app.include_router(posts.router, prefix="/api/v1")
+app.include_router(analytics.router, prefix="/api/v1")
+app.include_router(calendar.router, prefix="/api/v1")
+app.include_router(upload.router, prefix="/api/v1")
 
 
 @app.get("/")

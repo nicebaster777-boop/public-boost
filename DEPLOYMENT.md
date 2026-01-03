@@ -41,9 +41,9 @@ docker-compose --version
 ## Шаг 2: Клонирование проекта
 
 ```bash
-# Создание директории
-mkdir -p /opt/trusted-recommender
-cd /opt/trusted-recommender
+# Создание директории (замените на название вашего проекта)
+mkdir -p /opt/public-boost
+cd /opt/public-boost
 
 # Клонирование репозитория (или загрузка файлов)
 # git clone <your-repo-url> .
@@ -171,7 +171,7 @@ sudo ufw status
 sudo crontab -e
 
 # Добавить строку (обновление каждый месяц):
-0 0 1 * * certbot renew --quiet && docker-compose -f /opt/trusted-recommender/docker-compose.prod.yml restart nginx
+0 0 1 * * certbot renew --quiet && docker-compose -f /opt/public-boost/docker-compose.prod.yml restart nginx
 ```
 
 ---
@@ -196,7 +196,7 @@ docker-compose -f docker-compose.prod.yml logs -f nginx
 curl http://localhost/api/v1/health
 
 # Проверка БД
-docker-compose -f docker-compose.prod.yml exec db pg_isready -U trusted_user
+docker-compose -f docker-compose.prod.yml exec db pg_isready -U ${POSTGRES_USER}
 ```
 
 ---
@@ -228,17 +228,17 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ```bash
 # Создание бэкапа
-docker-compose -f docker-compose.prod.yml exec db pg_dump -U trusted_user trusted_db > backup_$(date +%Y%m%d_%H%M%S).sql
+docker-compose -f docker-compose.prod.yml exec db pg_dump -U ${POSTGRES_USER} ${POSTGRES_DB} > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Восстановление из бэкапа
-cat backup_YYYYMMDD_HHMMSS.sql | docker-compose -f docker-compose.prod.yml exec -T db psql -U trusted_user trusted_db
+cat backup_YYYYMMDD_HHMMSS.sql | docker-compose -f docker-compose.prod.yml exec -T db psql -U ${POSTGRES_USER} ${POSTGRES_DB}
 ```
 
 ### Автоматический бэкап (cron)
 
 ```bash
 # Добавить в crontab
-0 2 * * * docker-compose -f /opt/trusted-recommender/docker-compose.prod.yml exec -T db pg_dump -U trusted_user trusted_db > /opt/backups/trusted_db_$(date +\%Y\%m\%d).sql
+0 2 * * * cd /opt/public-boost && docker-compose -f docker-compose.prod.yml exec -T db pg_dump -U ${POSTGRES_USER} ${POSTGRES_DB} > /opt/backups/db_backup_$(date +\%Y\%m\%d).sql
 ```
 
 ---
@@ -274,7 +274,7 @@ docker-compose -f docker-compose.prod.yml config
 docker-compose -f docker-compose.prod.yml ps db
 
 # Проверка подключения
-docker-compose -f docker-compose.prod.yml exec db pg_isready -U trusted_user
+docker-compose -f docker-compose.prod.yml exec db pg_isready -U ${POSTGRES_USER}
 ```
 
 ### Проблема: Nginx не работает

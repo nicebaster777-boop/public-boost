@@ -50,3 +50,33 @@ class Recommendation(BaseModel):
     title: str
     description: str
     action: dict
+
+
+class MetricValue(BaseModel):
+    """Metric value with timestamp."""
+
+    value: float
+    recorded_at: datetime
+
+
+class CommunityMetricDetail(BaseModel):
+    """Detailed metric for a community."""
+
+    metric_name: str
+    values: list[MetricValue]
+    trend: str  # 'up', 'down', 'stable'
+    change_percent: float
+
+
+class CommunityAnalyticsResponse(BaseModel):
+    """Community analytics response schema."""
+
+    community: dict[str, str | UUID]  # id, name, platform
+    metrics: list[CommunityMetricDetail]
+    period: dict[str, datetime]  # from, to
+
+
+class RecommendationsResponse(BaseModel):
+    """Recommendations response schema."""
+
+    recommendations: list[Recommendation]
