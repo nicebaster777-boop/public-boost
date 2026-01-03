@@ -5,7 +5,11 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from datetime import timedelta
+
+from app.core.config import settings
 from app.core.database import get_db
+from app.core.email import send_password_reset_email
 from app.core.security import create_access_token, hash_password, verify_password
 from app.models.user import User
 from app.schemas.user import (
@@ -105,8 +109,19 @@ async def forgot_password(
     user = result.scalar_one_or_none()
 
     # Always return success to prevent email enumeration
-    # In production, send email with reset link only if user exists
-    # For MVP, we'll just return success message
+    if user:
+        # Generate reset token (valid for 1 hour)
+        reset_token = create_access_token(
+            {"sub": str(user.id), "type": "password_reset"},
+            expires_delta=timedelta(hours=1)
+        )
+        
+        # Create reset URL (frontend will handle the reset page)
+        reset_url = f"{settings.frontend_url}/reset-password?token={reset_token}"
+        
+        # Send email
+        await send_password_reset_email(user.email, reset_token, reset_url)
+    
     return {
         "message": "If an account with this email exists, password reset instructions have been sent."
     }

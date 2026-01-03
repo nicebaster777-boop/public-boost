@@ -45,6 +45,9 @@ class Settings(BaseSettings):
 
     # CORS
     cors_origins: str = "http://localhost:5173,http://localhost:3000"
+    
+    # Frontend URL for password reset links
+    frontend_url: str = "http://localhost:5173"
 
     @property
     def cors_origins_list(self) -> list[str]:
