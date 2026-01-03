@@ -10,12 +10,13 @@ from datetime import timedelta
 from app.core.config import settings
 from app.core.database import get_db
 from app.core.email import send_password_reset_email
-from app.core.security import create_access_token, hash_password, verify_password
+from app.core.security import create_access_token, decode_access_token, hash_password, verify_password
 from app.models.user import User
 from app.schemas.user import (
     ForgotPasswordRequest,
     LoginRequest,
     RegisterRequest,
+    ResetPasswordRequest,
     TokenResponse,
     UserResponse,
 )
@@ -124,4 +125,53 @@ async def forgot_password(
     
     return {
         "message": "If an account with this email exists, password reset instructions have been sent."
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+):
+    """Reset password using token."""
+    # Decode and verify token
+    payload = decode_access_token(request.token)
+    if not payload:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    
+    # Check token type
+    if payload.get("type") != "password_reset":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token type"
+        )
+    
+    # Get user ID from token
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid token"
+        )
+    
+    # Find user
+    result = await db.execute(select(User).where(User.id == user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Update password
+    user.password_hash = hash_password(request.password)
+    await db.commit()
+    await db.refresh(user)
+    
+    return {
+        "message": "Password has been reset successfully"
     }

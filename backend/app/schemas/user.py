@@ -62,3 +62,10 @@ class ForgotPasswordRequest(BaseModel):
     """Forgot password request schema."""
 
     email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    """Reset password request schema."""
+
+    token: str
+    password: str = Field(min_length=8, description="Password must be at least 8 characters")
