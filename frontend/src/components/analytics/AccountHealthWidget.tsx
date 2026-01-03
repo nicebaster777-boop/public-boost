@@ -27,7 +27,7 @@ export function AccountHealthWidget({ score, maxScore, metrics }: AccountHealthW
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Здоровье аккаунта</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Здоровье аккаунтов</h3>
       <div className="flex items-center justify-center mb-6">
         <div className="relative" style={{ width: '200px', height: '120px' }}>
           <svg

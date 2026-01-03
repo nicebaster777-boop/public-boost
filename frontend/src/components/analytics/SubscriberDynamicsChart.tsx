@@ -1,5 +1,6 @@
 /** Subscriber Dynamics Chart - Line chart showing follower growth. */
 
+import { useState } from 'react';
 import type { SubscriberDynamics } from '../../types/analytics';
 
 interface SubscriberDynamicsChartProps {
@@ -7,6 +8,8 @@ interface SubscriberDynamicsChartProps {
 }
 
 export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) {
+  const [showVK, setShowVK] = useState(true);
+  const [showTelegram, setShowTelegram] = useState(true);
   if (!data.data || data.data.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
@@ -43,7 +46,36 @@ export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) 
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Динамика подписчиков</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold text-gray-900">Динамика подписчиков</h3>
+        {/* Legend with checkboxes */}
+        <div className="flex items-center space-x-4">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showVK}
+              onChange={(e) => setShowVK(e.target.checked)}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 bg-blue-500 rounded"></div>
+              <span className="text-sm text-gray-700">ВК</span>
+            </div>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={showTelegram}
+              onChange={(e) => setShowTelegram(e.target.checked)}
+              className="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+            />
+            <div className="flex items-center space-x-1">
+              <div className="w-3 h-3 bg-red-500 rounded"></div>
+              <span className="text-sm text-gray-700">Telep</span>
+            </div>
+          </label>
+        </div>
+      </div>
       <div className="relative" style={{ height: `${chartHeight}px` }}>
         <svg width="100%" height={chartHeight} viewBox={`0 0 ${chartWidth + padding * 2} ${chartHeight}`}>
           {/* Grid lines */}
@@ -62,7 +94,7 @@ export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) 
             );
           })}
           {/* VK line (blue) */}
-          {points.length > 1 && (
+          {points.length > 1 && showVK && (
             <path
               d={vkPath.split(' Z')[0]}
               fill="none"
@@ -73,7 +105,7 @@ export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) 
             />
           )}
           {/* Telegram line (red) */}
-          {points.length > 1 && (
+          {points.length > 1 && showTelegram && (
             <path
               d={telegramPath.split(' Z')[0]}
               fill="none"
@@ -86,8 +118,8 @@ export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) 
           {/* Points */}
           {points.map((p, i) => (
             <g key={i}>
-              <circle cx={p.x} cy={p.vkY} r="3" fill="#3b82f6" />
-              <circle cx={p.x} cy={p.telegramY} r="3" fill="#ef4444" />
+              {showVK && <circle cx={p.x} cy={p.vkY} r="3" fill="#3b82f6" />}
+              {showTelegram && <circle cx={p.x} cy={p.telegramY} r="3" fill="#ef4444" />}
             </g>
           ))}
         </svg>
@@ -98,17 +130,6 @@ export function SubscriberDynamicsChart({ data }: SubscriberDynamicsChartProps) 
               {new Date(p.date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
             </span>
           ))}
-        </div>
-      </div>
-      {/* Legend */}
-      <div className="flex justify-center space-x-6 mt-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-blue-500 rounded"></div>
-          <span className="text-sm text-gray-600">VK</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <div className="w-4 h-4 bg-red-500 rounded"></div>
-          <span className="text-sm text-gray-600">Telegram</span>
         </div>
       </div>
     </div>

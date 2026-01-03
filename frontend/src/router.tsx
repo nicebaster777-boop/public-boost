@@ -12,6 +12,7 @@ import { CommunitiesPage } from './pages/CommunitiesPage';
 import { CalendarPage } from './pages/CalendarPage';
 import { PostsPage } from './pages/PostsPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { CompetitorsPage } from './pages/CompetitorsPage';
 
 export const router = createBrowserRouter([
   {
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
       {
         path: '/calendar',
         element: <CalendarPage />,
+      },
+      {
+        path: '/competitors',
+        element: <CompetitorsPage />,
       },
       {
         path: '/posts',

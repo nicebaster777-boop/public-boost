@@ -37,7 +37,7 @@ export function RecommendationsList({ recommendations }: RecommendationsListProp
   if (recommendations.length === 0) {
     return (
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Рекомендации</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Топ-3 рекомендации на неделю</h3>
         <p className="text-gray-600 text-center py-4">Нет рекомендаций</p>
       </div>
     );
@@ -45,7 +45,7 @@ export function RecommendationsList({ recommendations }: RecommendationsListProp
 
   return (
     <div className="bg-white p-6 rounded-lg shadow">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Рекомендации</h3>
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">Топ-3 рекомендации на неделю</h3>
       <div className="space-y-4">
         {recommendations.slice(0, 3).map((rec) => (
           <div

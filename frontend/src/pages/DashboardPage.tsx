@@ -51,24 +51,11 @@ export function DashboardPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Дашборд</h1>
-        <Button onClick={loadDashboard} variant="outline" size="small">
-          Обновить
-        </Button>
-      </div>
-
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
           {error}
         </div>
-      )}
-
-      {lastRefresh && (
-        <p className="text-sm text-gray-600 mb-6">
-          Последнее обновление: {lastRefresh.toLocaleTimeString('ru-RU')}
-        </p>
       )}
 
       {dashboardData && (
